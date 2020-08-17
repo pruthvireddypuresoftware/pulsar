@@ -17,14 +17,19 @@
 # under the License.
 #
 
-dist: trusty 
+dist: xenial 
 
+arch:
+  - amd64
+  - arm64
+
+apt:
+  addons: 
+   - openjdk-8-jdk
+   - maven
 language: java cpp 
 
 compiler: gcc
-
-jdk:
-  - oraclejdk8
 
 sudo: required
 
@@ -44,9 +49,12 @@ before_deploy:
 
 # Upgrade to maven 3.5.0
 before_install:
-  - export M2_HOME=$HOME/apache-maven-3.5.0
-  - if [ ! -d $M2_HOME/bin ]; then curl https://archive.apache.org/dist/maven/maven-3/3.5.0/binaries/apache-maven-3.5.0-bin.tar.gz | tar zxf - -C $HOME; fi
-  - export PATH=$M2_HOME/bin:$PATH
+  - |
+    if [[ ${TRAVIS_CPU_ARCH} != "arm64" ]]; then
+      export M2_HOME=$HOME/apache-maven-3.5.0
+      if [ ! -d $M2_HOME/bin ]; then curl https://archive.apache.org/dist/maven/maven-3/3.5.0/binaries/apache-maven-3.5.0-bin.tar.gz | tar zxf - -C $HOME; fi
+      export PATH=$M2_HOME/bin:$PATH
+    fi
 
 install:
   - (sudo bash -x $TRAVIS_BUILD_DIR/pulsar-client-cpp/travis-build.sh $HOME/pulsar-dep $TRAVIS_BUILD_DIR dep) || exit -1
